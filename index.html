@@ -11,7 +11,9 @@
             <div class="search">
                 <input type="text" placeholder="Enter city name" spellcheck="false" >
                 <button><img src="assets/images/search.png"></button>
+               
             </div>
+            <div class="suggestions" ></div>
             <div class="error">
                 <p>Invalid city name</p>
             </div>
@@ -45,6 +47,7 @@
             const searchBox=document.querySelector(".search input")
             const searchBtn=document.querySelector(".search button")
             const weatherIcon = document.querySelector(".weather-icon")
+            
 
              async function checkWeather(city) {
                 const response = await fetch(apiUrl+city+`&appid=${apiKey}`)
@@ -92,8 +95,48 @@
         }
             
             searchBtn.addEventListener("click",()=>{
+
                 checkWeather(searchBox.value)
+                suggestionBox.style.display = "none"
             })
+            
+
+
+   const suggestionBox = document.querySelector(".suggestions");
+
+// Function to display suggestions
+        async function getSuggestions(query) {
+          const response = await fetch(`https://secure.geonames.org/searchJSON?name_startsWith=${query}&maxRows=5&username=pavithrani`);
+          const data = await response.json();
+          console.log(data)
+
+       if (data.geonames.length > 0) {
+        suggestionBox.innerHTML = ''; // Clear old suggestions
+        data.geonames.forEach(city => {
+            const suggestion = document.createElement("p");
+            suggestion.textContent = city.name + ", " + city.countryName;
+            suggestion.addEventListener("click", () => {
+                searchBox.value = city.name;
+                suggestionBox.style.display = "none"; // Hide suggestions after selection
+            });
+            suggestionBox.appendChild(suggestion);
+        });
+        suggestionBox.style.display = "block"; // Show suggestion box
+      } else {
+        suggestionBox.style.display = "none"; // Hide if no results
+     }
+}
+
+// Event listener for input
+ searchBox.addEventListener("input", () => {
+    const query = searchBox.value;
+    if (query.length > 0) {
+        getSuggestions(query);
+    } else {
+        suggestionBox.style.display = "none"; // Hide if query is too short
+    }
+});
+
 
            
          </script>
